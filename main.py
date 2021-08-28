@@ -1,5 +1,6 @@
 from imageProcess import Process
-
+from ROVdrive import Steer
+from droneClient import TcpClient
 
 #class ROV:
 
@@ -9,5 +10,5 @@ from imageProcess import Process
 
 
 if __name__ == '__main__':
-    
+
     Process.findTarget()
