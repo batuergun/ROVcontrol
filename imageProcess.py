@@ -4,30 +4,23 @@ import imutils
 
 class Process:
 
-    def __init__(self, capture_width, capture_height, correctionThreshold):
+    def __init__(self, lower_threshold, upper_threshold, correctionThreshold):
 
-        self.correctionThreshold = correctionThreshold #(pixels)
+        self.lower_threshold = lower_threshold
+        self.upper_threshold = upper_threshold
+        self.correctionThreshold = correctionThreshold
 
-        self.capture.set(3, capture_width)
-        self.capture.set(4, capture_height)
         
-    def findTarget(capture, capture_width, capture_height, correctionThreshold):
+    def findTarget(self, capture, capture_width, capture_height, drawTargets, drawAverage):
 
         _,frame = capture.read()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-        targetList, targetArea = [], []
+        targetList, customTargets = [], []
         cx, cy = int(capture_width/2), int(capture_height/2)
         cw, ch = capture_width/2, capture_height/2
 
-        #                  lower            upper
-        #   Test1   -   [20, 25, 80]   [100, 255, 255]
-        #   Test2   -   [50, 50, 100]  [95, 230, 170]
-
-        lower_threshold = np.array([50, 50, 100])     #[20, 25, 80]
-        upper_threshold = np.array([95, 230, 170])    #[100, 255, 255]
-
-        mask = cv2.inRange(hsv, lower_threshold, upper_threshold)
+        mask = cv2.inRange(hsv, self.lower_threshold, self.upper_threshold)
 
         contours = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         contours = imutils.grab_contours(contours)
@@ -41,8 +34,8 @@ class Process:
                 cx = int(M['m10'] / M['m00'])
                 cy = int(M['m01'] / M['m00'])
                 
-                if cx < (cw + correctionThreshold) and cx > (cw - correctionThreshold):
-                    if cy < (ch + correctionThreshold) and cy > (ch - correctionThreshold):
+                if cx < (cw + self.correctionThreshold) and cx > (cw - self.correctionThreshold):
+                    if cy < (ch + self.correctionThreshold) and cy > (ch - self.correctionThreshold):
                         cv2.circle(frame, (cx, cy), 7, (0, 255, 0), -1)
                         targetStatus = 1
                     cv2.circle(frame, (cx, cy), 5, (255, 255, 255), -1)
@@ -57,26 +50,30 @@ class Process:
         targetList.sort(key=lambda x: int(x[2]))
         targetList.reverse()
 
-        try: 
-            cxMax, cyMax = int(targetList[0][0]), int(targetList[0][1])
-            cv2.circle(frame, (cxMax, cyMax), 10, (0, 0, 255), -1)
-        except: None
-
-        targetCount = targetList.count()
-        for t in targetList:
-            xSum = xSum + targetList[t][0]
-            ySum = ySum + targetList[t][1]
-        
-        try: 
-            xAverage, yAverage = int(xSum / targetCount), int(ySum / targetCount)
-            cv2.circle(frame, (xAverage, yAverage), 10, (200, 50, 0), -1)
-        except: None
-        
-        cv2.circle(frame, (int(cw), int(ch)), correctionThreshold, (255, 255, 255), 1)
+        cv2.circle(frame, (int(cw), int(ch)), self.correctionThreshold, (255, 255, 255), 1)
         cv2.circle(frame, (int(cw), int(ch)), 2, (255, 255, 255), 2)
         
-        cv2.imshow("Test1 Capture", frame)
-        return targetList
-            
+        if drawTargets == True:
+            try: 
+                cxMax, cyMax = int(targetList[0][0]), int(targetList[0][1])
+                cv2.circle(frame, (cxMax, cyMax), 10, (0, 0, 255), -1)
+            except: None
 
-        
+        if drawAverage == True:
+            xSum, ySum = 0, 0
+            targetCount = len(targetList)
+            for t in range(0, targetCount):
+                xBuffer, yBuffer = int(targetList[t][0]), int(targetList[t][1])
+                xSum = xSum + xBuffer
+                ySum = ySum + yBuffer
+
+            try: 
+                xAverage, yAverage = int(xSum / targetCount), int(ySum / targetCount)
+                cv2.circle(frame, (xAverage, yAverage), 10, (200, 50, 0), -1)
+            except: None
+
+        try: customTargets.append((cxMax, cyMax, xAverage, yAverage))
+        except: customTargets = []
+
+        cv2.imshow("Test1 Capture", frame)
+        return targetList, customTargets
