@@ -5,8 +5,8 @@ from imageProcess import Process
 from ROVdrive import Steer
 
 class ROV:
-    def __init__(self, driveSpeed):
-        self.driveSpeed = driveSpeed
+    def __init__(self, id):
+        self.id = id
 
     def AutonomousDrive():
         
@@ -26,7 +26,7 @@ class ROV:
             frame = Process(lower_threshold, upper_threshold, correctionThreshold)
             targetList, customTargets = frame.findTarget(capture, capture_width, capture_height, drawTargets, drawAverage)
             
-            target = Steer(targetList)
+            t = Steer(targetList)
             Steer.targetEvaluation(targetList)
 
             interrupt = cv2.waitKey(5)

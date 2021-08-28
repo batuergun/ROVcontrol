@@ -4,11 +4,7 @@ class Steer:
 
     def __init__(self, target):
         
-        P = 0
-        I = 0
-        D = 0
-
-        print(target)
+        self.target = target
 
     def targetEvaluation(self, targetList):
         print(targetList)
