@@ -27,7 +27,7 @@ class Process:
 
         for c in contours:
             area = cv2.contourArea(c)
-            if area > 5000:
+            if area > 5000 and area < 15000:
                 targetStatus = 0
                 cv2.drawContours(frame, [c], -1, (0, 255, 255), 3)
                 M = cv2.moments(c)

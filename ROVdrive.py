@@ -6,5 +6,5 @@ class Steer:
         
         self.target = target
 
-    def targetEvaluation(self, targetList):
+    def targetEvaluation(targetList):
         print(targetList)
