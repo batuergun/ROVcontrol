@@ -10,43 +10,54 @@ class Process:
         self.upper_threshold = upper_threshold
         self.correctionThreshold = correctionThreshold
 
+    def findCenter(self, c, frame, capture_width, capture_height):
+
+        cx, cy = int(capture_width/2), int(capture_height/2)
+        cw, ch = capture_width/2, capture_height/2
+        targetStatus = 0
+
+        cv2.drawContours(frame, [c], -1, (0, 255, 255), 3)
+        M = cv2.moments(c)
+        try:
+            cx = int(M['m10'] / M['m00'])
+            cy = int(M['m01'] / M['m00'])
+        except:
+            print('No target')
         
-    def findTarget(self, capture, capture_width, capture_height, drawTargets, drawAverage):
+        if cx < (cw + self.correctionThreshold) and cx > (cw - self.correctionThreshold):
+            if cy < (ch + self.correctionThreshold) and cy > (ch - self.correctionThreshold):
+                cv2.circle(frame, (cx, cy), 7, (0, 255, 0), -1)
+                targetStatus = 1
+            cv2.circle(frame, (cx, cy), 5, (255, 255, 255), -1)
+        else:
+            cv2.circle(frame, (cx, cy), 5, (255, 255, 255), -1)
+
+        cv2.line(frame, (int(cw), int(ch)), (cx, cy), (50, 255, 0), 1)
+        #cv2.putText(frame, "Gate", (cx-20, cy-20), cv2.FONT_HERSHEY_SIMPLEX, 2.5, (255, 255, 255), 3)
+        return cx, cy, targetStatus
+        
+    def findTarget(self, capture, capture_width, capture_height, drawTargets, drawAverage, limitMode):
 
         _,frame = capture.read()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
         targetList, customTargets = [], []
-        cx, cy = int(capture_width/2), int(capture_height/2)
         cw, ch = capture_width/2, capture_height/2
 
         mask = cv2.inRange(hsv, self.lower_threshold, self.upper_threshold)
-
         contours = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         contours = imutils.grab_contours(contours)
 
         for c in contours:
             area = cv2.contourArea(c)
-            if area > 5000:
-            #if area > 5000 and area < 15000:
-                targetStatus = 0
-                cv2.drawContours(frame, [c], -1, (0, 255, 255), 3)
-                M = cv2.moments(c)
-                cx = int(M['m10'] / M['m00'])
-                cy = int(M['m01'] / M['m00'])
-                
-                if cx < (cw + self.correctionThreshold) and cx > (cw - self.correctionThreshold):
-                    if cy < (ch + self.correctionThreshold) and cy > (ch - self.correctionThreshold):
-                        cv2.circle(frame, (cx, cy), 7, (0, 255, 0), -1)
-                        targetStatus = 1
-                    cv2.circle(frame, (cx, cy), 5, (255, 255, 255), -1)
-                else:
-                    cv2.circle(frame, (cx, cy), 5, (255, 255, 255), -1)
-
-                cv2.line(frame, (int(cw), int(ch)), (cx, cy), (50, 255, 0), 1)
-                #cv2.putText(frame, "Gate", (cx-20, cy-20), cv2.FONT_HERSHEY_SIMPLEX, 2.5, (255, 255, 255), 3)
-
-                targetList.append((cx, cy, area, targetStatus))
+            if limitMode[0] == 0:
+                if area > limitMode[1]:
+                    cx, cy, targetStatus = Process.findCenter(self, c, frame, capture_width, capture_height)
+                    targetList.append((cx, cy, area, targetStatus))
+            if limitMode[0] == 1:
+                if area > limitMode[1] and area < limitMode[2]:
+                    cx, cy, targetStatus = Process.findCenter(self, c, frame, capture_width, capture_height)
+                    targetList.append((cx, cy, area, targetStatus))
 
         targetList.sort(key=lambda x: int(x[2]))
         targetList.reverse()
