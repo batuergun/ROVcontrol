@@ -35,12 +35,11 @@ class Process:
         
     def findTarget(self, capture, capture_width, capture_height, drawTargets, drawAverage, limitMode):
 
-        _,frame = capture.read()
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
         targetList, customTargets = [], []
         cw, ch = capture_width/2, capture_height/2
 
+        _,frame = capture.read()
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, self.lower_threshold, self.upper_threshold)
         contours = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         contours = imutils.grab_contours(contours)
@@ -84,5 +83,5 @@ class Process:
         try: customTargets.append((cxMax, cyMax, xAverage, yAverage))
         except: customTargets = []
 
-        cv2.imshow("Test1 Capture", frame)
+        cv2.imshow("ROVcontrol Capture", frame)
         return targetList, customTargets
