@@ -1,6 +1,5 @@
 import socket
 from socket import SHUT_RDWR
-import fcntl
 import struct
 import time
 import serial
@@ -10,6 +9,7 @@ import threading
 from http.server import BaseHTTPRequestHandler,HTTPServer
 from socketserver import ThreadingMixIn
 from io import StringIO,BytesIO
+#import fcntl
 
 class Client():
 
