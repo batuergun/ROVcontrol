@@ -18,11 +18,8 @@ class Process:
 
         cv2.drawContours(frame, [c], -1, (0, 255, 255), 3)
         M = cv2.moments(c)
-        try:
-            cx = int(M['m10'] / M['m00'])
-            cy = int(M['m01'] / M['m00'])
-        except:
-            print('No target')
+        cx = int(M['m10'] / M['m00'])
+        cy = int(M['m01'] / M['m00'])
         
         if cx < (cw + self.correctionThreshold) and cx > (cw - self.correctionThreshold):
             if cy < (ch + self.correctionThreshold) and cy > (ch - self.correctionThreshold):
