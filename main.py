@@ -1,8 +1,10 @@
 import cv2
+import threading
 import numpy as np
 
 from imageProcess import Process
 from ROVdrive import Steer
+from ROVclient import Client
 
 class ROV:
     def __init__(self, cameraProfile, testProfile):
@@ -62,5 +64,14 @@ class ROV:
 
 if __name__ == '__main__':
 
-    rov = ROV(0, 'live')
-    ROV.AutonomousDrive(rov)
+    #rov = ROV(0, 'live')
+    #ROV.AutonomousDrive(rov)
+
+    cameraThread = threading.Thread(target=Client.Capture)
+    cameraThread.start()
+
+    driveThread = threading.Thread(target=Client.old_drive)
+    driveThread.start()
+
+    Client.Connect()
+    Client.driveRuntime()
