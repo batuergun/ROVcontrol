@@ -27,24 +27,18 @@ class Client():
         sock = socket.socket()
         sock2 = socket.socket()
         sock.bind((self.rpi_ip_address, 3333))
-        print("Socket olusturuldu!")
 
         sock.listen(4) 
         c_socket, c_address = sock.accept()
-        print(c_address, "Dinleme baglantisi kuruldu!")
 
         sock2.connect((self.ip_address, 4444))
-        print("Gonderme baglantisi kuruldu!")
         connected = True
-        print("a")
 
     def Reconnect():
         global c_socket, c_address, sock, sock2, connected
         time.sleep(1)
-        print("bitti")
         sock.listen(4) 
         c_socket, c_address = sock.accept()
-        print(c_address, "Dinleme baglantisi kuruldu!")
         connected = True
 
     def Capture():
@@ -56,7 +50,6 @@ class Client():
         global img
         try:
             server = ThreadedHTTPServer(('169.254.214.107', 8080), CamHandler)
-            print( "server started")
             server.serve_forever()
         except KeyboardInterrupt:
             capture.release()
