@@ -33,7 +33,21 @@ class Steer:
         for dutyCycle in range(0, PWM +1, acceleration):
           self.pwm[i].ChangeDutyCycle(dutyCycle)
           time.sleep(0.05)
-    
+
+    def turn(self, PWM, acceleration, angle):
+      turnPins = [self.Motor2, self.Motor4]
+      if angle > 0:
+        for i in turnPins:
+          for dutyCycle in range(0, PWM +1, acceleration):
+            self.pwm[turnPins[1]].ChangeDutyCycle(dutyCycle)
+            time.sleep(0.05)
+      if angle < 0:
+        for i in turnPins:
+          for dutyCycle in range(0, PWM +1, acceleration):
+            self.pwm[turnPins[0]].ChangeDutyCycle(dutyCycle)
+            time.sleep(0.05)
+
+
     def shutdown(self):
       self.pwm.stop()
       GPIO.cleanup()

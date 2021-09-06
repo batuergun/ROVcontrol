@@ -9,8 +9,8 @@ from ROVclient import Client
 class ROV:
     def __init__(self, cameraProfile, testProfile):
 
-        self.cameraThread = threading.Thread(target=Client.Capture)
-        self.driveThread = threading.Thread(target=Client.old_drive)
+        #self.cameraThread = threading.Thread(target=Client.Capture)
+        #self.driveThread = threading.Thread(target=Client.old_drive)
 
         #                  lower            upper               limitMode
         #   Test1   -   [50, 50, 100]  [95, 230, 170]       [0, 5000, 0]        (Initial test)
@@ -68,7 +68,10 @@ class ROV:
 if __name__ == '__main__':
 
     rov = ROV(0, 1)
-    ROV.AutonomousDrive(rov)
+    #ROV.AutonomousDrive(rov)
+
+    Steer.forward(rov, 20, 1)
+    Steer.forward(rov, 0, 1)
 
     #ROV.cameraThread.start()
     #ROV.driveThread.start()
