@@ -9,8 +9,9 @@ class Steer:
       self.pwm = []
 
       # Motor1, Motor2, Motor3, Motor4, ThrottleL, ThrottleF
-      self.outputPins = [22, 24, 26, 28, 16, 18]
-      self.Motor1, self.Motor2, self.Motor3, self.Motor4, self.ThrottleL, self.ThrottleF = [22, 24, 26, 28, 16, 18]
+      # self.outputPins = [22, 24, 26, 28, 16, 18]
+      self.outputPins = [25, 8, 7, 12, 23, 24]
+      self.Motor1, self.Motor2, self.Motor3, self.Motor4, self.ThrottleL, self.ThrottleF = [25, 8, 7, 12, 23, 24]
 
       
     def driveSetup(self):
@@ -32,10 +33,11 @@ class Steer:
     def targetEvaluation(targetList):
         print(targetList)
 
-    def forward(self, PWM, acceleration):
-      forwardPins = [self.Motor2, self.Motor4]
-      for i in forwardPins:
-        self.pi.set_servo_pulsewidth(forwardPins[i], PWM)
+    def forward(self, PWM):
+      #forwardPins = [self.Motor2, self.Motor4]
+      #for i in forwardPins:
+        self.pi.set_servo_pulsewidth(self.Motor2, PWM)
+        self.pi.set_servo_pulsewidth(self.Motor4, PWM)
 
     def turn(self, PWM, acceleration, angle):
       turnPins = [self.Motor2, self.Motor4]
