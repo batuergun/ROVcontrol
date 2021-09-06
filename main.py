@@ -70,8 +70,9 @@ if __name__ == '__main__':
     rov = ROV(0, 1)
     #ROV.AutonomousDrive(rov)
 
-    Steer.forward(rov, 20, 1)
-    Steer.forward(rov, 0, 1)
+    steer = Steer()
+    Steer.forward(steer, 20, 1)
+    Steer.forward(steer, 0, 1)
 
     #ROV.cameraThread.start()
     #ROV.driveThread.start()
