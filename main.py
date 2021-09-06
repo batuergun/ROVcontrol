@@ -74,6 +74,7 @@ if __name__ == '__main__':
     Steer.driveSetup(steer)
     Steer.forward(steer, 20, 1)
     Steer.forward(steer, 0, 1)
+    Steer.shutdown()
 
     #ROV.cameraThread.start()
     #ROV.driveThread.start()
