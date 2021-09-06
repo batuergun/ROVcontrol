@@ -4,9 +4,7 @@ import RPi.GPIO as GPIO
 
 class Steer:
 
-    def __init__(self, target):
-        
-        self.target = target
+    def __init__(self):
         self.pwm = []
 
         # Motor1, Motor2, Motor3, Motor4, ThrottleL, ThrottleF
