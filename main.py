@@ -71,6 +71,7 @@ if __name__ == '__main__':
     #ROV.AutonomousDrive(rov)
 
     steer = Steer()
+    Steer.driveSetup(steer)
     Steer.forward(steer, 20, 1)
     Steer.forward(steer, 0, 1)
 

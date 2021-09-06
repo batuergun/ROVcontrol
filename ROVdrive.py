@@ -5,16 +5,19 @@ import RPi.GPIO as GPIO
 class Steer:
 
     def __init__(self):
-        self.pwm = []
+      self.pwm = []
+      
+      # Motor1, Motor2, Motor3, Motor4, ThrottleL, ThrottleF
+      self.outputPins = [22, 24, 26, 28, 16, 18]
+      self.Motor1, self.Motor2, self.Motor3, self.Motor4, self.ThrottleL, self.ThrottleF = [22, 24, 26, 28, 16, 18]
 
-        # Motor1, Motor2, Motor3, Motor4, ThrottleL, ThrottleF
-        self.outputPins = [22, 24, 26, 28, 16, 18]
-        self.Motor1, self.Motor2, self.Motor3, self.Motor4, self.ThrottleL, self.ThrottleF = [22, 24, 26, 28, 16, 18]
+      
+    def driveSetup(self):
+      GPIO.setmode(GPIO.BOARD)
+      for i in self.outputPins:
+        GPIO.setup(i, GPIO.OUT)
+        self.pwm[i] = GPIO.PWM(i, 100)
 
-        GPIO.setmode(GPIO.BOARD)
-        for i in self.outputPins:
-          GPIO.setup(i, GPIO.OUT)
-          self.pwm[i] = GPIO.PWM(i, 100)
 
     def targetEvaluation(targetList):
         print(targetList)
