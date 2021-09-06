@@ -1,23 +1,30 @@
 import time
 import cv2
 import RPi.GPIO as GPIO
+import pigpio
 
 class Steer:
 
     def __init__(self):
       self.pwm = []
-      
+
       # Motor1, Motor2, Motor3, Motor4, ThrottleL, ThrottleF
       self.outputPins = [22, 24, 26, 28, 16, 18]
       self.Motor1, self.Motor2, self.Motor3, self.Motor4, self.ThrottleL, self.ThrottleF = [22, 24, 26, 28, 16, 18]
 
       
     def driveSetup(self):
-      GPIO.setmode(GPIO.BOARD)
-      for i in self.outputPins:
-        GPIO.setup(i, GPIO.OUT)
-        self.pwm[i] = GPIO.PWM(i, 100)
+      GPIO.setmode(GPIO.BCM)
+      self.pi = pigpio.pi()
 
+      self.pi.set_servo_pulsewidth(24, 1500)
+      time.sleep(2)
+
+      self.pi.set_servo_pulsewidth(24, 1000)
+      time.sleep(2)
+
+      self.pi.set_servo_pulsewidth(24, 1200)
+      time.sleep(2)
 
     def targetEvaluation(targetList):
         print(targetList)
@@ -50,5 +57,7 @@ class Steer:
 
 
     def shutdown(self):
+      self.pi.set_servo_pulsewidth(24, 0)
+      self.pi.stop()
       self.pwm.stop()
       GPIO.cleanup()
