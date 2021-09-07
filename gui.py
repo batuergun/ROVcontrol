@@ -5,7 +5,7 @@ from PIL import ImageTk, Image
 
 class GUI:
 
-    def __init__(self, capture, capture2):
+    def __init__(self, capture):
         self.window = Tk()
         self.window.title('ROVControl')
         self.window.geometry('1280x750')
@@ -97,21 +97,29 @@ class GUI:
         return str(maskValue)
 
     def update(self):
-        frame = self.vid.get_frame()
-        
-        self.photo = ImageTk.PhotoImage(image = Image.fromarray(frame))
-        self.canvas.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
+        ret, frame = self.vid.get_frame()
+        if ret:
+            self.photo = ImageTk.PhotoImage(image = Image.fromarray(frame))
+            self.canvas.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
  
         self.window.after(self.delay, self.update)
 
 class VideoCapture:
 
     def __init__(self, capture):
-        self.capture = capture
+        self.vid = capture
+        if not self.vid.isOpened():
+            raise ValueError("Unable to open video source")
  
-        self.width = 1280
-        self.height = 720
+        self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
     def get_frame(self):
-        frame = self.capture
-        return (cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        if self.vid.isOpened():
+            ret, frame = self.vid.read()
+            if ret:
+                return (ret, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            else:
+                return (ret, None)
+        else:
+            return (ret, None)

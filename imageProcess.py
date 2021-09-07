@@ -2,8 +2,6 @@ import cv2
 import numpy as np
 import imutils
 
-from gui import GUI
-
 class Process:
 
     def __init__(self, lower_threshold, upper_threshold, correctionThreshold):
@@ -85,6 +83,5 @@ class Process:
         try: customTargets.append((cxMax, cyMax, xAverage, yAverage))
         except: customTargets = []
 
-        #cv2.imshow("ROVcontrol Capture", frame)
-        GUI(frame, capture)
+        cv2.imshow("ROVcontrol Capture", frame)
         return targetList, customTargets
