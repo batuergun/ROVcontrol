@@ -12,7 +12,6 @@ class Steer:
       # self.outputPins = [22, 24, 26, 28, 16, 18]
       self.outputPins = [25, 8, 7, 12, 23, 24]
       self.Motor1, self.Motor2, self.Motor3, self.Motor4, self.ThrottleL, self.ThrottleF = [25, 8, 7, 12, 23, 24]
-
       
     def driveSetup(self):
       GPIO.setmode(GPIO.BCM)

@@ -3,6 +3,7 @@ import threading
 import numpy as np
 
 from imageProcess import Process
+from gui import GUI
 from ROVdrive import Steer
 from ROVclient import Client
 
@@ -11,6 +12,7 @@ class ROV:
 
         #self.cameraThread = threading.Thread(target=Client.Capture)
         #self.driveThread = threading.Thread(target=Client.old_drive)
+        self.guiThread = threading.Thread(target=GUI)
 
         #                  lower            upper               limitMode
         #   Test1   -   [50, 50, 100]  [95, 230, 170]       [0, 5000, 0]        (Initial test)
@@ -20,7 +22,7 @@ class ROV:
 
         if cameraProfile == 0:
             self.drawTargets, self.drawAverage = True, True
-            self.capture_width, self.capture_height = 1280, 720
+            self.capture_width, self.capture_height = 480, 360
             self.correctionThreshold = 50
 
         if testProfile == 'live':
@@ -33,19 +35,19 @@ class ROV:
             self.lower_threshold = np.array([50, 50, 100])
             self.upper_threshold = np.array([95, 230, 170])
             self.limitMode = [0, 5000, 0]
-            self.capture = cv2.VideoCapture("A:/Ubuntu/Projects/gateRecognition/test1.mp4")
+            self.capture = cv2.VideoCapture("/home/pi/Desktop/pi/test1.mp4")
 
         if testProfile == 2:
             self.lower_threshold = np.array([20, 25, 80])
             self.upper_threshold = np.array([100, 255, 255])
             self.limitMode = [0, 5000, 0]
-            self.capture = cv2.VideoCapture("A:/Ubuntu/Projects/gateRecognition/test2.mp4")
+            self.capture = cv2.VideoCapture("/home/pi/Desktop/pi/test1.mp4")
 
         if testProfile == 3:
             self.lower_threshold = np.array([80, 80, 100])
             self.upper_threshold = np.array([99, 130, 255])
             self.limitMode = [1, 4000, 40000]
-            self.capture = cv2.VideoCapture("A:/Ubuntu/Projects/gateRecognition/test3.mp4")
+            self.capture = cv2.VideoCapture("/home/pi/Desktop/pi/test1.mp4")
             
 
     def AutonomousDrive(self):
@@ -54,7 +56,7 @@ class ROV:
             frame = Process(self.lower_threshold, self.upper_threshold, self.correctionThreshold)
             targetList, customTargets = frame.findTarget(self.capture, self.capture_width, self.capture_height, self.drawTargets, self.drawAverage, self.limitMode)
             
-            t = Steer(targetList)
+            t = Steer()
             Steer.targetEvaluation(targetList)
 
             interrupt = cv2.waitKey(5)
@@ -67,14 +69,16 @@ class ROV:
 
 if __name__ == '__main__':
 
-    rov = ROV(0, 1)
-    #ROV.AutonomousDrive(rov)
+    rov = ROV(0, 'live')
+    ROV.AutonomousDrive(rov)
 
-    steer = Steer()
-    Steer.driveSetup(steer)
-    Steer.forward(steer, 20, 1)
-    Steer.forward(steer, 0, 1)
-    Steer.shutdown()
+    #ROV.guiThread.start()
+
+    #steer = Steer()
+    #Steer.driveSetup(steer)
+    #Steer.forward(steer, 20)
+    #Steer.forward(steer, 0)
+    #Steer.shutdown()
 
     #ROV.cameraThread.start()
     #ROV.driveThread.start()
