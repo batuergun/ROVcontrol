@@ -9,7 +9,7 @@ import threading
 from http.server import BaseHTTPRequestHandler,HTTPServer
 from socketserver import ThreadingMixIn
 from io import StringIO,BytesIO
-#import fcntl
+import fcntl
 
 class Client():
 

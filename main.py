@@ -12,7 +12,6 @@ class ROV:
 
         #self.cameraThread = threading.Thread(target=Client.Capture)
         #self.driveThread = threading.Thread(target=Client.old_drive)
-        #self.guiThread = threading.Thread(target=self.initGUI())
 
         #                  lower            upper               limitMode
         #   Test1   -   [50, 50, 100]  [95, 230, 170]       [0, 5000, 0]        (Initial test)
@@ -55,7 +54,7 @@ class ROV:
         while True:
             frame = Process(self.lower_threshold, self.upper_threshold, self.correctionThreshold)
             targetList, customTargets = frame.findTarget(self.capture, self.capture_width, self.capture_height, self.drawTargets, self.drawAverage, self.limitMode)
-            GUI(self.capture)
+            #GUI(self.capture)
             
             t = Steer()
             Steer.targetEvaluation(targetList)
@@ -72,8 +71,6 @@ if __name__ == '__main__':
 
     rov = ROV(0, 1)
     ROV.AutonomousDrive(rov)
-
-    #ROV.guiThread.start()
 
     #steer = Steer()
     #Steer.driveSetup(steer)
