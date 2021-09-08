@@ -1,16 +1,17 @@
 import cv2
 import threading
 import numpy as np
+import time
 
 from imageProcess import Process
 from gui import GUI
 from ROVdrive import Steer
-from ROVclient import Client
+import ROVclient
 
 class ROV:
     def __init__(self, cameraProfile, testProfile):
 
-        #self.cameraThread = threading.Thread(target=Client.Capture)
+        self.cameraThread = threading.Thread(target=ROVclient.Client.Capture)
         #self.driveThread = threading.Thread(target=Client.old_drive)
 
         #                  lower            upper               limitMode
@@ -28,7 +29,7 @@ class ROV:
             self.lower_threshold = np.array([30, 90, 170])
             self.upper_threshold = np.array([220, 255, 255])
             self.limitMode = [0, 5000, 0]
-            self.capture = cv2.VideoCapture(0) 
+            #self.capture = cv2.VideoCapture(0) 
 
         if testProfile == 1:
             self.lower_threshold = np.array([50, 50, 100])
@@ -69,17 +70,28 @@ class ROV:
 
 if __name__ == '__main__':
 
-    rov = ROV(0, 1)
-    ROV.AutonomousDrive(rov)
+    #rov = ROV(0, 'live')
+    #ROV.AutonomousDrive(rov)
+
+    cameraThread = threading.Thread(target=ROVclient.Client.Capture)
+    cameraThread.start()
+
+    client = ROVclient.Client()
+    client.Connect()
+
+    while True:
+        joystick = ROVclient.Client.driveRuntime()
+        axis = joystick.split('.')
+        print(axis)
 
     #steer = Steer()
     #Steer.driveSetup(steer)
-    #Steer.forward(steer, 20)
-    #Steer.forward(steer, 0)
-    #Steer.shutdown()
+    #steer.forward(0)
+    #time.sleep(3)
+    #steer.forward(5)
+    #time.sleep(5)
 
-    #ROV.cameraThread.start()
-    #ROV.driveThread.start()
+    #steer.stop()
 
-    #Client.Connect()
-    #Client.driveRuntime()
+
+    

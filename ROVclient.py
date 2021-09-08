@@ -11,12 +11,14 @@ from socketserver import ThreadingMixIn
 from io import StringIO,BytesIO
 import fcntl
 
+# 169.254.214.107
+
 class Client():
 
     def __init__(self):
         self.rpi_ip_address = Client.get_ip_address('eth0')
-        self.ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.1)
-        self.ser.flush()
+        #self.ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.1)
+        #self.ser.flush()
 
     def get_ip_address(ifname):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -26,12 +28,14 @@ class Client():
         global c_socket, c_address, sock, sock2, connected
         sock = socket.socket()
         sock2 = socket.socket()
-        sock.bind((self.rpi_ip_address, 3333))
+        sock.bind((self.rpi_ip_address, 3000))
 
         sock.listen(4) 
         c_socket, c_address = sock.accept()
 
-        sock2.connect((self.ip_address, 4444))
+        # Client IP
+        self.ip_address = '192.168.1.37'
+        sock2.connect((self.ip_address, 4000))
         connected = True
 
     def Reconnect():
@@ -49,41 +53,45 @@ class Client():
         capture.set(cv2.CAP_PROP_SATURATION,0.2)
         global img
         try:
-            server = ThreadedHTTPServer(('169.254.214.107', 8080), CamHandler)
+            server = ThreadedHTTPServer(('192.168.1.41', 8080), CamHandler)
             server.serve_forever()
         except KeyboardInterrupt:
             capture.release()
             server.socket.close()
 
+    '''
     def old_drive(self):
         global stringdeger_encode
         
         while True:
             try: self.ser.write(stringdeger_encode)	
             except: print("No data.")
+    '''
 
-    def driveRuntime(self):
-        while True:
-            global c_socket, c_address, sock, sock2, connected, stringdeger_encode
-            try:
-                if(connected == True):
-                    message = "hey"
-                    data = c_socket.recv(1024).decode()
-                    sock2.send(message.encode())
-                    
-                    stringdeger = data + "S"
-                    stringdeger_encode = stringdeger.encode()
-                    self.ser.write(stringdeger_encode)	
-                    print(stringdeger)
+    def driveRuntime():
+        global c_socket, c_address, sock, sock2, connected, stringdeger
+        try:
+            if(connected == True):
+                message = "hey"
+                data = c_socket.recv(1024).decode()
+                sock2.send(message.encode())
                 
-            except ConnectionResetError:
-                print("Connection Reset.")
-                connected = False
-                Client.Reconnect()
-            except BrokenPipeError:
-                print("Broken Pipe.")
-                connected = False
-                Client.Reconnect()
+                stringdeger = data + "S"
+                return data
+                #print(data)
+            
+        except ConnectionResetError:
+            print("Connection Reset.")
+            connected = False
+            Client.Reconnect()
+        except BrokenPipeError:
+            print("Broken Pipe.")
+            connected = False
+            Client.Reconnect()
+
+    def returnData(data):
+        return data
+
 
 capture=None
 
@@ -116,7 +124,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_header('Content-type','text/html')
 			self.end_headers()
 			self.wfile.write('<html><head></head><body>'.encode())
-			self.wfile.write('<img src="http://169.254.214.107:8080/cam.mjpg"/>'.encode())
+			self.wfile.write('<img src="http://192.168.1.41:8080/cam.mjpg"/>'.encode())
 			self.wfile.write('</body></html>'.encode())
 			return
 
