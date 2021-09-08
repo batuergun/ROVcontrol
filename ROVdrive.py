@@ -36,14 +36,34 @@ class Steer:
 
     def omnidirectional(self, x, y):
       default = 1500
+      x = Steer._map(x, -32, 32, 1000, 2000)
+      y = Steer._map(y, -32, 32, 1000, 2000)
 
+      if x > y:
+        self.pi.set_servo_pulsewidth(self.Motor1, default)
+        self.pi.set_servo_pulsewidth(self.Motor2, x)
+        self.pi.set_servo_pulsewidth(self.Motor3, default)
+        self.pi.set_servo_pulsewidth(self.Motor4, x)
 
-      self.pi.set_servo_pulsewidth(self.Motor1, default)
-      self.pi.set_servo_pulsewidth(self.Motor2, default)
-      self.pi.set_servo_pulsewidth(self.Motor3, default)
-      self.pi.set_servo_pulsewidth(self.Motor4, default)
+      if y > x:
+        self.pi.set_servo_pulsewidth(self.Motor1, y)
+        self.pi.set_servo_pulsewidth(self.Motor2, default)
+        self.pi.set_servo_pulsewidth(self.Motor3, y)
+        self.pi.set_servo_pulsewidth(self.Motor4, default)
 
-    #def eulerRotate(self, x, y):
+    def eulerRotate(self, x, y):
+      default = 1500
+      x = Steer._map(x, -32, 32, 1000, 2000)
+      y = Steer._map(y, -32, 32, 1000, 2000)
+
+      self.pi.set_servo_pulsewidth(self.ThrottleL, y)
+      self.pi.set_servo_pulsewidth(self.ThrottleR, y)
+
+      if x > 1500:
+        self.pi.set_servo_pulsewidth(self.Motor3, x)
+
+      else:
+        self.pi.set_servo_pulsewidth(self.Motor2, x)
 
     def forward(self, PWM):
       signal = 1500

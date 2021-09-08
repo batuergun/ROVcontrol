@@ -34,7 +34,7 @@ class Client():
         c_socket, c_address = sock.accept()
 
         # Client IP
-        self.ip_address = '192.168.1.37'
+        self.ip_address = '169.254.132.242'
         sock2.connect((self.ip_address, 4000))
         connected = True
 
@@ -48,16 +48,35 @@ class Client():
     def Capture():
         global capture
         capture = cv2.VideoCapture(0)
+
         capture.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
         capture.set(cv2.CAP_PROP_SATURATION,0.2)
+
         global img
         try:
-            server = ThreadedHTTPServer(('192.168.1.41', 8080), CamHandler)
+            server = ThreadedHTTPServer(('169.254.214.107', 8080), CamHandler)
             server.serve_forever()
         except KeyboardInterrupt:
             capture.release()
             server.socket.close()
+        return capture
+
+    def Capture2():
+        global capture2
+        capture2 = cv2.VideoCapture(1)
+
+        capture2.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+        capture2.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+        capture2.set(cv2.CAP_PROP_SATURATION,0.2)
+        
+        global img2
+        try:
+            server2 = ThreadedHTTPServer(('169.254.214.107', 8080), CamHandler2)
+            server2.serve_forever()
+        except KeyboardInterrupt:
+            capture.release()
+            server2.socket.close()
         return capture
 
     '''
@@ -95,6 +114,7 @@ class Client():
 
 
 capture=None
+capture2=None
 
 class CamHandler(BaseHTTPRequestHandler):
 	def do_GET(self):
@@ -125,7 +145,40 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_header('Content-type','text/html')
 			self.end_headers()
 			self.wfile.write('<html><head></head><body>'.encode())
-			self.wfile.write('<img src="http://192.168.1.41:8080/cam.mjpg"/>'.encode())
+			self.wfile.write('<img src="http://169.254.214.107:8080/cam1.mjpg"/>'.encode())
+			self.wfile.write('</body></html>'.encode())
+			return
+
+class CamHandler2(BaseHTTPRequestHandler):
+	def do_GET(self):
+		if self.path.endswith('.mjpg'):
+			self.send_response(200)
+			self.send_header('Content-type','multipart/x-mixed-replace; boundary=--jpgboundary')
+			self.end_headers()
+
+			while True:
+				try:
+					rc,img2 = capture2.read()
+					if not rc: continue
+					imgRGB=cv2.cvtColor(img2,cv2.COLOR_BGR2RGB)
+					jpg = Image.fromarray(imgRGB)
+					tmpFile = BytesIO()
+					jpg.save(tmpFile,'JPEG')
+					self.wfile.write("--jpgboundary".encode())
+					self.send_header('Content-type','image/jpeg')
+					self.send_header('Content-length',str(tmpFile.getbuffer().nbytes))
+					self.end_headers()
+					jpg.save(self.wfile,'JPEG')
+					time.sleep(0.05)
+				except KeyboardInterrupt: break
+			return
+
+		if self.path.endswith('.html'):
+			self.send_response(200)
+			self.send_header('Content-type','text/html')
+			self.end_headers()
+			self.wfile.write('<html><head></head><body>'.encode())
+			self.wfile.write('<img src="http://169.254.214.107:8080/cam2.mjpg"/>'.encode())
 			self.wfile.write('</body></html>'.encode())
 			return
 
