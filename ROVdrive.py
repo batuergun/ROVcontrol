@@ -34,6 +34,17 @@ class Steer:
     def _map(x, in_min, in_max, out_min, out_max):
         return int((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
 
+    def omnidirectional(self, x, y):
+      default = 1500
+
+
+      self.pi.set_servo_pulsewidth(self.Motor1, default)
+      self.pi.set_servo_pulsewidth(self.Motor2, default)
+      self.pi.set_servo_pulsewidth(self.Motor3, default)
+      self.pi.set_servo_pulsewidth(self.Motor4, default)
+
+    #def eulerRotate(self, x, y):
+
     def forward(self, PWM):
       signal = 1500
       signal = Steer._map(PWM, -16, 16, 1000, 2000)
@@ -41,14 +52,21 @@ class Steer:
       self.pi.set_servo_pulsewidth(self.Motor2, signal)
       self.pi.set_servo_pulsewidth(self.Motor4, signal)
 
-    def turn(self, PWM, acceleration, angle):
+    def turn(self, PWM):
+      signal = 1500
+      signal = Steer._map(PWM, -16, 16, 1000, 2000)
       turnPins = [self.Motor2, self.Motor4]
-      if angle > 0:
+      print('Motor2: {} - Motor4: {}'.format(signal, signal))
+
+      if signal > 1500:
         for i in turnPins:
-          self.pi.set_servo_pulsewidth(turnPins[i], PWM)
-      if angle < 0:
+          self.pi.set_servo_pulsewidth(turnPins[1], signal)
+          print('Motor2: {} - Motor4: {}'.format(1500, signal))
+      if signal < 1500:
         for i in turnPins:
-          self.pi.set_servo_pulsewidth(turnPins[i], PWM)
+          self.pi.set_servo_pulsewidth(turnPins[0], signal)
+          print('Motor2: {} - Motor4: {}'.format(signal, 1500))
+      
 
     def stop(self):
       self.pi.set_servo_pulsewidth(self.Motor1, 0)

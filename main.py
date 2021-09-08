@@ -79,9 +79,24 @@ if __name__ == '__main__':
     client = ROVclient.Client()
     client.Connect()
 
+    steer = Steer()
+    #steer.driveSetup()
+
     while True:
         joystick = ROVclient.Client.driveRuntime()
-        axis = joystick.split('.')
+        joystickAxis = joystick.split('.')
+        axis = []
+        for i in joystickAxis:
+            axis[i] = int(joystickAxis[i])
+        
+        if axis[2] > 0 or axis[3] > 0:
+            steer.omnidirectional(axis[2], axis[3])
+
+        elif axis[0] > 0 or axis[1] > 0:
+            steer.eulerRotate(axis[0], axis[1])
+
+        
+        #steer.turn(int(axis[0]))
         print(axis)
 
     #steer = Steer()

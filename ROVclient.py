@@ -58,6 +58,7 @@ class Client():
         except KeyboardInterrupt:
             capture.release()
             server.socket.close()
+        return capture
 
     '''
     def old_drive(self):
