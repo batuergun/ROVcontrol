@@ -12,6 +12,7 @@ from io import StringIO,BytesIO
 import fcntl
 
 # 169.254.214.107
+# 169.254.132.242
 
 class Client():
 
@@ -51,7 +52,7 @@ class Client():
 
         capture.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
-        capture.set(cv2.CAP_PROP_SATURATION,0.2)
+        capture.set(cv2.CAP_PROP_SATURATION,80)
 
         global img
         try:
@@ -64,20 +65,20 @@ class Client():
 
     def Capture2():
         global capture2
-        capture2 = cv2.VideoCapture(1)
+        capture2 = cv2.VideoCapture(2)
 
         capture2.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         capture2.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
-        capture2.set(cv2.CAP_PROP_SATURATION,0.2)
+        capture.set(cv2.CAP_PROP_SATURATION,80)
         
         global img2
         try:
-            server2 = ThreadedHTTPServer(('169.254.214.107', 8080), CamHandler2)
+            server2 = ThreadedHTTPServer(('169.254.214.107', 8081), CamHandler2)
             server2.serve_forever()
         except KeyboardInterrupt:
-            capture.release()
+            capture2.release()
             server2.socket.close()
-        return capture
+        return capture2
 
     '''
     def old_drive(self):
@@ -158,9 +159,9 @@ class CamHandler2(BaseHTTPRequestHandler):
 
 			while True:
 				try:
-					rc,img2 = capture2.read()
+					rc,img = capture2.read()
 					if not rc: continue
-					imgRGB=cv2.cvtColor(img2,cv2.COLOR_BGR2RGB)
+					imgRGB=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
 					jpg = Image.fromarray(imgRGB)
 					tmpFile = BytesIO()
 					jpg.save(tmpFile,'JPEG')

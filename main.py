@@ -74,30 +74,60 @@ if __name__ == '__main__':
     #ROV.AutonomousDrive(rov)
 
     cameraThread = threading.Thread(target=ROVclient.Client.Capture)
+    camera2Thread = threading.Thread(target=ROVclient.Client.Capture2)
+
     cameraThread.start()
+    camera2Thread.start()
 
     client = ROVclient.Client()
     client.Connect()
 
-    #steer = Steer()
+    steer = Steer()
     #steer.driveSetup()
-'''
+    steer.forward(0)
+    time.sleep(3)
+
     while True:
         joystick = ROVclient.Client.driveRuntime()
         joystickAxis = joystick.split('.')
-        axis = []
-        for i in joystickAxis:
-            axis[i] = int(joystickAxis[i])
         
+        axis = [0, 0, 0, 0, 0, 0]
+        axis[0] = int(float(joystickAxis[0]))
+        axis[1] = int(joystickAxis[1])
+        axis[2] = int(joystickAxis[2])
+        axis[3] = int(joystickAxis[3])
+        axis[4] = int(joystickAxis[4])
+        axis[5] = int(joystickAxis[5])
+
+        if axis[5] > 0:
+            steer.rotate(axis[5], 'left')
+        elif axis[4] > 0:
+            steer.rotate(axis[4], 'right')
+        else:
+            steer.omnidrive(axis[0],axis[1],axis[2],axis[3])
+
+        print(axis)
+        '''
         if axis[2] > 0 or axis[3] > 0:
+            steer.omnidirectional(axis[2], axis[3])
+
+        elif axis[2] < 0 or axis[3] < 0:
             steer.omnidirectional(axis[2], axis[3])
 
         elif axis[0] > 0 or axis[1] > 0:
             steer.eulerRotate(axis[0], axis[1])
+        
+        elif axis[0] < 0 or axis[1] < 0:
+            steer.eulerRotate(axis[0], axis[1])
 
+        else:
+            steer.hold()
+
+        '''
+        #print(axis)
+        
         #steer.turn(int(axis[0]))
-        print(axis)
-'''
+
     #steer = Steer()
     #Steer.driveSetup(steer)
     #steer.forward(0)
