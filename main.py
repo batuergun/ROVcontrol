@@ -55,6 +55,8 @@ class ROV:
 
         waiting = False
         forward = False
+        gateCounter = 0
+
         while True:
 
             frame = Process(self.lower_threshold, self.upper_threshold, self.correctionThreshold)
@@ -70,30 +72,30 @@ class ROV:
             if forward == False:
                 if xDelta > 0:
                     xDelta = -xDelta
-                    xPWM = Steer._map(xDelta, 0, 320, 0, 20)
-                    xPWM = Steer._map(xPWM, 0, 20, 0, -20)
+                    xPWM = Steer._map(xDelta, 0, 320, 0, 10)
+                    xPWM = Steer._map(xPWM, 0, 10, 0, -10)
                     #steer.omnidrive(0,0,xPWM,0)
 
                     if yDelta < 0:
                         yDelta = -yDelta
-                        yPWM = Steer._map(yDelta, 0, 240, 0, 20)
+                        yPWM = Steer._map(yDelta, 0, 240, 0, 10)
                         steer.omnidrive(0,0,xPWM,yPWM)
                     elif yDelta > 0:
-                        yPWM = Steer._map(yDelta, 0, 240, 0, 20)
-                        yPWM = Steer._map(yPWM, 0, 20, 0, -20)
+                        yPWM = Steer._map(yDelta, 0, 240, 0, 10)
+                        yPWM = Steer._map(yPWM, 0, 10, 0, -10)
                         steer.omnidrive(0,0,xPWM,yPWM)
 
                 elif xDelta < 0:
-                    xPWM = Steer._map(xDelta, 0, 320, 0, 20)
+                    xPWM = Steer._map(xDelta, 0, 320, 0, 10)
                     #steer.omnidrive(0,0,x_inverted,0)
 
                     if yDelta < 0:
                         yDelta = -yDelta
-                        yPWM = Steer._map(yDelta, 0, 240, 0, 20)
+                        yPWM = Steer._map(yDelta, 0, 240, 0, 10)
                         steer.omnidrive(0,0,xPWM,yPWM)
                     elif yDelta > 0:
-                        yPWM = Steer._map(yDelta, 0, 240, 0, 20)
-                        yPWM = Steer._map(yPWM, 0, 20, 0, -20)
+                        yPWM = Steer._map(yDelta, 0, 240, 0, 10)
+                        yPWM = Steer._map(yPWM, 0, 10, 0, -10)
                         steer.omnidrive(0,0,xPWM,yPWM)
                     
                 else:
@@ -107,19 +109,23 @@ class ROV:
                         if waiting == False:
                             start = time.time()
                             waiting = True
-                            forward = True
                         else: 
                             now = time.time()
                             if now - start > 5:
-                                steer.omnidrive(0,15,0,0)
+                                print(now - start)
+                                forward = True
+                                steer.omnidrive(0,10,0,0)
             
             else:
                 if time.time() - start > 5:
+                    print('GateFlag')
                     forward = False
                     waiting = False
+                    gateCounter = gateCounter + 1
 
                 else:
-                    steer.omnidrive(0,15,0,0)
+                    print('forward')
+                    steer.omnidrive(0,20,0,0)
             
             #gui.video_stream(image)
             #mask1, mask2 = GUI.getMask()
