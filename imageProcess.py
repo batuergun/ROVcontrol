@@ -64,7 +64,7 @@ class Process:
         if drawTargets == True:
             try: 
                 cxMax, cyMax = int(targetList[0][0]), int(targetList[0][1])
-                cv2.circle(frame, (cxMax, cyMax), 10, (0, 0, 255), -1)
+                #cv2.circle(frame, (cxMax, cyMax), 10, (0, 0, 255), -1)             #red target
             except: None
 
         if drawAverage == True:
@@ -80,8 +80,9 @@ class Process:
                 cv2.circle(frame, (xAverage, yAverage), 10, (200, 50, 0), -1)
             except: None
 
-        try: customTargets.append((cxMax, cyMax, xAverage, yAverage))
+        try: customTargets.append((xAverage, yAverage))
         except: customTargets = []
 
         cv2.imshow("ROVcontrol Capture", frame)
-        return targetList, customTargets
+        try: return targetList, xAverage, yAverage, frame
+        except: return targetList, 320, 240, frame

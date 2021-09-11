@@ -5,7 +5,8 @@ from PIL import ImageTk, Image
 
 class GUI:
 
-    def __init__(self, capture):
+    def __init__(self):
+
         self.window = Tk()
         self.window.title('ROVControl')
         self.window.geometry('1280x750')
@@ -21,9 +22,8 @@ class GUI:
         # Camera 1 Setup
         Camera1 = Frame(top, padx=10, pady=10, bg='#2aaad1', width=800, height=480)
 
-        self.vid = VideoCapture(capture)
-        self.canvas = Canvas(Camera1, width = self.vid.width, height = self.vid.height)
-        self.canvas.pack()
+        #self.lmain = Label(Camera1, width = 640, height = 480)
+        #self.lmain.pack()
 
         Camera1.pack(side=TOP, fill=BOTH, expand=TRUE)
 
@@ -35,15 +35,29 @@ class GUI:
         # Mask Sliders Setup
         Sliders = Frame(ControlPanel, padx=10, pady=10, background='#c93939', width=400, height=240)
 
-        lower_mask = DoubleVar()
+        self.lower_mask = DoubleVar()
         maskLabel = Label(Sliders, text='Lower Mask    -    Upper Mask')
         maskLabel.pack(side=TOP)
-        lower_mask_slider = Scale(Sliders, from_=0, to=255, orient=HORIZONTAL, length= 180)
-        upper_mask_slider = Scale(Sliders, from_=0, to=255, orient=HORIZONTAL, length= 180)
+
+        def mask1Update(val):
+            file1 = open("mask1Config.txt","r+")
+            file1.write(val)
+            file1.close()
+
+        def mask2Update(val):
+            file2 = open("mask2Config.txt","r+")
+            file2.write(val)
+            file2.close()
+
+        lower_mask_slider = Scale(Sliders, from_=0, to=255, orient=HORIZONTAL, length= 180, command=mask1Update)
+        upper_mask_slider = Scale(Sliders, from_=0, to=255, orient=HORIZONTAL, length= 180, command=mask2Update)
         lower_mask_slider.pack(side=LEFT)
         upper_mask_slider.pack(side=LEFT)
 
-        updateButton = Button(Sliders, text="Update Mask", command=lambda: self.maskUpdate(lower_mask_slider.get()))
+        slider1 = lower_mask_slider.get()
+        slider2 = upper_mask_slider.get()
+
+        updateButton = Button(Sliders, text="Update Mask") #command=lambda: GUI.mask1Update(slider1, slider2)
         updateButton.pack(side=BOTTOM)
 
         Sliders.pack(fill=BOTH)
@@ -86,40 +100,26 @@ class GUI:
         Terminal = Frame(bottom, padx=10, pady=10, background='#777777', width=800, height=240)
         Terminal.pack()
 
-        self.delay = 15
-        self.update()
-
         self.window.mainloop()
 
-        return lower_mask_slider.get()
+    def getMask():
+        file1 = open("mask1Config.txt","r+")
+        mask1 = file1.read()
+        file1.close()
 
-    def maskUpdate(self, maskValue):
-        return str(maskValue)
+        file2 = open("mask2Config.txt","r+")
+        mask2 = file1.read()
+        file2.close()
 
-    def update(self):
-        ret, frame = self.vid.get_frame()
-        if ret:
-            self.photo = ImageTk.PhotoImage(image = Image.fromarray(frame))
-            self.canvas.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
- 
-        self.window.after(self.delay, self.update)
+        return mask1, mask2
 
-class VideoCapture:
+    def video_stream(self, image):
+            #ret, frame = image.read()
+            cv2image = cv2.cvtColor(image, cv2.COLOR_BGR2RGBA)
+            img = Image.fromarray(cv2image)
+            imgtk = ImageTk.PhotoImage(image=img)
+            self.lmain.imgtk = imgtk
+            self.lmain.configure(image=imgtk)
+            self.lmain.after(1, GUI.video_stream) 
 
-    def __init__(self, capture):
-        self.vid = capture
-        if not self.vid.isOpened():
-            raise ValueError("Unable to open video source")
- 
-        self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
-        self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
-
-    def get_frame(self):
-        if self.vid.isOpened():
-            ret, frame = self.vid.read()
-            if ret:
-                return (ret, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-            else:
-                return (ret, None)
-        else:
-            return (ret, None)
+        

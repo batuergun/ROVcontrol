@@ -1,3 +1,4 @@
+from typing import ForwardRef
 import cv2
 import threading
 import numpy as np
@@ -22,14 +23,14 @@ class ROV:
 
         if cameraProfile == 0:
             self.drawTargets, self.drawAverage = True, True
-            self.capture_width, self.capture_height = 480, 360
+            self.capture_width, self.capture_height = 640, 480
             self.correctionThreshold = 50
 
         if testProfile == 'live':
-            self.lower_threshold = np.array([30, 90, 170])
-            self.upper_threshold = np.array([220, 255, 255])
+            self.lower_threshold = np.array([30, 80, 90])
+            self.upper_threshold = np.array([100, 255, 255])
             self.limitMode = [0, 5000, 0]
-            #self.capture = cv2.VideoCapture(0) 
+            self.capture = cv2.VideoCapture(2)
 
         if testProfile == 1:
             self.lower_threshold = np.array([50, 50, 100])
@@ -52,41 +53,110 @@ class ROV:
 
     def AutonomousDrive(self):
 
+        waiting = False
+        forward = False
         while True:
+
             frame = Process(self.lower_threshold, self.upper_threshold, self.correctionThreshold)
-            targetList, customTargets = frame.findTarget(self.capture, self.capture_width, self.capture_height, self.drawTargets, self.drawAverage, self.limitMode)
-            #GUI(self.capture)
+            targetList, xAverage, yAverage, image = frame.findTarget(self.capture, self.capture_width, self.capture_height, self.drawTargets, self.drawAverage, self.limitMode)
             
-            t = Steer()
-            Steer.targetEvaluation(targetList)
+            #640x480
+
+            targetx = xAverage
+            xDelta = targetx - 320
+            targety = yAverage
+            yDelta = targety - 240
+
+            if forward == False:
+                if xDelta > 0:
+                    xDelta = -xDelta
+                    xPWM = Steer._map(xDelta, 0, 320, 0, 20)
+                    xPWM = Steer._map(xPWM, 0, 20, 0, -20)
+                    #steer.omnidrive(0,0,xPWM,0)
+
+                    if yDelta < 0:
+                        yDelta = -yDelta
+                        yPWM = Steer._map(yDelta, 0, 240, 0, 20)
+                        steer.omnidrive(0,0,xPWM,yPWM)
+                    elif yDelta > 0:
+                        yPWM = Steer._map(yDelta, 0, 240, 0, 20)
+                        yPWM = Steer._map(yPWM, 0, 20, 0, -20)
+                        steer.omnidrive(0,0,xPWM,yPWM)
+
+                elif xDelta < 0:
+                    xPWM = Steer._map(xDelta, 0, 320, 0, 20)
+                    #steer.omnidrive(0,0,x_inverted,0)
+
+                    if yDelta < 0:
+                        yDelta = -yDelta
+                        yPWM = Steer._map(yDelta, 0, 240, 0, 20)
+                        steer.omnidrive(0,0,xPWM,yPWM)
+                    elif yDelta > 0:
+                        yPWM = Steer._map(yDelta, 0, 240, 0, 20)
+                        yPWM = Steer._map(yPWM, 0, 20, 0, -20)
+                        steer.omnidrive(0,0,xPWM,yPWM)
+                    
+                else:
+                    steer.hold()
+                    xPWM, yPWM = 0, 0
+
+                if abs(xAverage - 320) < 50 and abs(yAverage - 240) < 50:
+                    if xAverage == 320 and yAverage == 240:
+                        steer.hold()
+                    else:
+                        if waiting == False:
+                            start = time.time()
+                            waiting = True
+                            forward = True
+                        else: 
+                            now = time.time()
+                            if now - start > 5:
+                                steer.omnidrive(0,15,0,0)
+            
+            else:
+                if time.time() - start > 5:
+                    forward = False
+                    waiting = False
+
+                else:
+                    steer.omnidrive(0,15,0,0)
+            
+            #gui.video_stream(image)
+            #mask1, mask2 = GUI.getMask()
 
             interrupt = cv2.waitKey(5)
             if interrupt == 27:
                 break
             
-        self.capture.release()
-        cv2.destroyAllWindows()
-
 
 if __name__ == '__main__':
 
-    #rov = ROV(0, 'live')
-    #ROV.AutonomousDrive(rov)
-
-    cameraThread = threading.Thread(target=ROVclient.Client.Capture)
-    camera2Thread = threading.Thread(target=ROVclient.Client.Capture2)
-
-    cameraThread.start()
-    camera2Thread.start()
-
-    client = ROVclient.Client()
-    client.Connect()
+    #gui = GUI()
 
     steer = Steer()
     #steer.driveSetup()
-    steer.forward(0)
-    time.sleep(3)
 
+    rov = ROV(0, 'live')
+    ROV.AutonomousDrive(rov)
+
+    #cameraThread = threading.Thread(target=ROVclient.Client.Capture)
+    #camera2Thread = threading.Thread(target=ROVclient.Client.Capture2)
+
+    #cameraThread.start()
+    #camera2Thread.start()
+
+    #client = ROVclient.Client()
+    #client.Connect()
+
+    #steer = Steer()
+    #steer.driveSetup()
+    #steer.forward(0)
+    #time.sleep(3)
+
+
+    # Manual Control 
+
+    '''
     while True:
         joystick = ROVclient.Client.driveRuntime()
         joystickAxis = joystick.split('.')
@@ -107,26 +177,7 @@ if __name__ == '__main__':
             steer.omnidrive(axis[0],axis[1],axis[2],axis[3])
 
         print(axis)
-        '''
-        if axis[2] > 0 or axis[3] > 0:
-            steer.omnidirectional(axis[2], axis[3])
-
-        elif axis[2] < 0 or axis[3] < 0:
-            steer.omnidirectional(axis[2], axis[3])
-
-        elif axis[0] > 0 or axis[1] > 0:
-            steer.eulerRotate(axis[0], axis[1])
-        
-        elif axis[0] < 0 or axis[1] < 0:
-            steer.eulerRotate(axis[0], axis[1])
-
-        else:
-            steer.hold()
-
-        '''
-        #print(axis)
-        
-        #steer.turn(int(axis[0]))
+    '''
 
     #steer = Steer()
     #Steer.driveSetup(steer)
@@ -136,6 +187,23 @@ if __name__ == '__main__':
     #time.sleep(5)
 
     #steer.stop()
+
+    '''
+    if axis[2] > 0 or axis[3] > 0:
+        steer.omnidirectional(axis[2], axis[3])
+
+    elif axis[2] < 0 or axis[3] < 0:
+        steer.omnidirectional(axis[2], axis[3])
+
+    elif axis[0] > 0 or axis[1] > 0:
+        steer.eulerRotate(axis[0], axis[1])
+    
+    elif axis[0] < 0 or axis[1] < 0:
+        steer.eulerRotate(axis[0], axis[1])
+
+    else:
+        steer.hold()
+    '''
 
 
     

@@ -35,7 +35,8 @@ class Client():
         c_socket, c_address = sock.accept()
 
         # Client IP
-        self.ip_address = '169.254.132.242'
+        #self.ip_address = '169.254.211.71'
+        self.ip_address = '169.254.132.242'     # Batuhan
         sock2.connect((self.ip_address, 4000))
         connected = True
 
