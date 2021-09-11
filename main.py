@@ -1,10 +1,12 @@
 from typing import ForwardRef
+from configparser import ConfigParser
 import cv2
 import threading
 import numpy as np
 import time
 
 from imageProcess import Process
+from Calibration import Calibration
 from gui import GUI
 from ROVdrive import Steer
 import ROVclient
@@ -25,6 +27,23 @@ class ROV:
             self.drawTargets, self.drawAverage = True, True
             self.capture_width, self.capture_height = 640, 480
             self.correctionThreshold = 50
+
+        if cameraProfile == 1:
+            self.drawTargets, self.drawAverage = True, True
+            self.capture_width, self.capture_height = 1280, 720
+            self.correctionThreshold = 50
+
+        if testProfile == 'config':
+            config = ConfigParser()
+            config.read('config.ini')
+            B_lower = int(config.get('blue', 'lower'))
+            B_upper = int(config.get('blue', 'upper'))
+            G_lower = int(config.get('green', 'lower'))
+            G_upper = int(config.get('green', 'upper'))
+            R_lower = int(config.get('red', 'lower'))
+            R_upper = int(config.get('red', 'upper'))
+            self.lower_threshold = np.array([B_lower, G_lower, R_lower])
+            self.upper_threshold = np.array([B_upper, G_upper, R_upper])
 
         if testProfile == 'live':
             self.lower_threshold = np.array([30, 80, 90])
@@ -138,13 +157,14 @@ class ROV:
 
 if __name__ == '__main__':
 
-    #gui = GUI()
+    Calibration()
+    #rov = ROV(0, 'config')
 
-    steer = Steer()
+    #steer = Steer()
     #steer.driveSetup()
 
-    rov = ROV(0, 'live')
-    ROV.AutonomousDrive(rov)
+    #rov = ROV(0, 'config')
+    #ROV.AutonomousDrive(rov)
 
     #cameraThread = threading.Thread(target=ROVclient.Client.Capture)
     #camera2Thread = threading.Thread(target=ROVclient.Client.Capture2)
