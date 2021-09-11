@@ -158,7 +158,7 @@ if __name__ == '__main__':
     #steer = Steer()
     #steer.driveSetup()
     #steer.forward(0)
-    #time.sleep(3)
+    #time.sleep(10)
 
 
     # Manual Control 
