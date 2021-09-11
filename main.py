@@ -57,6 +57,9 @@ class ROV:
         forward = False
         gateCounter = 0
 
+        startCounter = 5
+        forwardCounter = 5
+
         while True:
 
             frame = Process(self.lower_threshold, self.upper_threshold, self.correctionThreshold)
@@ -101,6 +104,7 @@ class ROV:
                 else:
                     steer.hold()
                     xPWM, yPWM = 0, 0
+                    start = 0
 
                 if abs(xAverage - 320) < 50 and abs(yAverage - 240) < 50:
                     if xAverage == 320 and yAverage == 240:
@@ -111,21 +115,18 @@ class ROV:
                             waiting = True
                         else: 
                             now = time.time()
-                            if now - start > 5:
-                                print(now - start)
+                            if now - start > startCounter:
                                 forward = True
                                 steer.omnidrive(0,10,0,0)
             
             else:
-                if time.time() - start > 5:
-                    print('GateFlag')
+                if time.time() - start < forwardCounter + startCounter:
+                    steer.omnidrive(0,10,0,0)
+
+                else:
                     forward = False
                     waiting = False
                     gateCounter = gateCounter + 1
-
-                else:
-                    print('forward')
-                    steer.omnidrive(0,20,0,0)
             
             #gui.video_stream(image)
             #mask1, mask2 = GUI.getMask()
