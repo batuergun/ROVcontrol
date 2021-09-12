@@ -1,9 +1,8 @@
-from configparser import ConfigParser
 from tkinter import *
 import tkinter
 import cv2
 from PIL import ImageTk, Image
-
+from configparser import ConfigParser
 import numpy as np
 import imutils
 
@@ -13,15 +12,14 @@ class Calibration:
 
         capture_width, capture_height = 1280, 720
         correctionThreshold = 50
-        limitMode = [0, 5000, 0]
-
-        lower_threshold = np.array([30, 80, 90])
-        upper_threshold = np.array([100, 255, 255])
-
+        
         # Limit mode 0 -> [0, areaMinThreshold, None]
         # Limit mode 1 -> [1, areaMinThreshold, areaMaxThreshold]
 
         Calibration.getConfig(self)
+        lower_threshold = np.array([int(self.B_lower), int(self.G_lower), int(self.R_lower)])
+        upper_threshold = np.array([int(self.B_upper), int(self.G_upper), int(self.R_upper)])
+        limitMode = [int(self.areaMode), int(self.areaMin), int(self.areaMax)]
         
         self.window = Tk()
         self.window.title('ROVControl')
@@ -34,7 +32,7 @@ class Calibration:
         ControlPanel.pack(side=LEFT)
 
         # Camera 1 Setup
-        Camera1 = Frame(top, padx=10, pady=10, bg='#2aaad1', width=800, height=480)
+        Camera1 = Frame(top, padx=10, pady=10, width=800, height=480)
 
         lmain = Label(Camera1)
         lmain.pack()
@@ -64,6 +62,11 @@ class Calibration:
             return cx, cy, targetStatus
 
         def video_stream():
+            Calibration.getConfig(self)
+            lower_threshold = np.array([int(self.B_lower), int(self.G_lower), int(self.R_lower)])
+            upper_threshold = np.array([int(self.B_upper), int(self.G_upper), int(self.R_upper)])
+            limitMode = [int(self.areaMode), int(self.areaMin), int(self.areaMax)]
+
             targetList, customTargets = [], []
             cw, ch = capture_width/2, capture_height/2
 
@@ -120,37 +123,53 @@ class Calibration:
         Camera1.pack(side=TOP, fill=BOTH, expand=TRUE)
 
         # Mask Sliders Setup
-        Sliders = Frame(ControlPanel, padx=10, pady=10, background='#c93939', width=400, height=240)
+        Sliders = Frame(ControlPanel, padx=10, pady=10, background='#4ecc81', width=400, height=240)
 
-        self.lower_mask = DoubleVar()
-        maskLabel = Label(Sliders, text='Lower Mask    -    Upper Mask')
-        maskLabel.pack(side=TOP)
-
-        ChannelB = Frame(Sliders, padx=10, pady=10, background='#c93939')
+        ChannelB = Frame(Sliders, padx=10, pady=10, background='#4ecc81')
+        blueLabel = Label(Sliders, text='Blue', background='#4ecc81')
         self.B_lower_mask_slider = Scale(Sliders, from_=0, to=255, orient=HORIZONTAL, length= 180)
         self.B_upper_mask_slider = Scale(Sliders, from_=0, to=255, orient=HORIZONTAL, length= 180)
-        self.B_lower_mask_slider.set(self.B_lower_threshold)
-        self.B_upper_mask_slider.set(self.B_upper_threshold)
+        self.B_lower_mask_slider.set(self.B_lower)
+        self.B_upper_mask_slider.set(self.B_upper)
+        blueLabel.pack()
         self.B_lower_mask_slider.pack()
         self.B_upper_mask_slider.pack()
         ChannelB.pack()
 
-        ChannelG = Frame(Sliders, padx=10, pady=10, background='#c93939')
+        ChannelG = Frame(Sliders, padx=10, pady=10, background='#4ecc81')
+        greenLabel = Label(Sliders, text='Green', background='#4ecc81')
         self.G_lower_mask_slider = Scale(Sliders, from_=0, to=255, orient=HORIZONTAL, length= 180)
         self.G_upper_mask_slider = Scale(Sliders, from_=0, to=255, orient=HORIZONTAL, length= 180)
-        self.G_lower_mask_slider.set(self.G_lower_threshold)
-        self.G_upper_mask_slider.set(self.G_upper_threshold)
+        self.G_lower_mask_slider.set(self.G_lower)
+        self.G_upper_mask_slider.set(self.G_upper)
+        greenLabel.pack()
         self.G_lower_mask_slider.pack()
         self.G_upper_mask_slider.pack()
         ChannelG.pack()
 
-        ChannelR = Frame(Sliders, padx=10, pady=10, background='#c93939')
+        ChannelR = Frame(Sliders, padx=10, pady=10, background='#4ecc81')
+        redLabel = Label(Sliders, text='Red', background='#4ecc81')
         self.R_lower_mask_slider = Scale(Sliders, from_=0, to=255, orient=HORIZONTAL, length= 180)
         self.R_upper_mask_slider = Scale(Sliders, from_=0, to=255, orient=HORIZONTAL, length= 180)
-        self.R_lower_mask_slider.set(self.R_lower_threshold)
-        self.R_upper_mask_slider.set(self.R_upper_threshold)
+        self.R_lower_mask_slider.set(self.R_lower)
+        self.R_upper_mask_slider.set(self.R_upper)
+        redLabel.pack()
         self.R_lower_mask_slider.pack()
         self.R_upper_mask_slider.pack()
+        ChannelR.pack()
+
+        ChannelArea = Frame(Sliders, padx=10, pady=10, background='#4ecc81')
+        areaLabel = Label(Sliders, text='Area Limit', background='#4ecc81')
+        self.mode_area = Scale(Sliders, from_=0, to=1, orient=HORIZONTAL, length= 180)
+        self.min_area = Scale(Sliders, from_=0, to=50000, orient=HORIZONTAL, length= 180)
+        self.max_area = Scale(Sliders, from_=0, to=50000, orient=HORIZONTAL, length= 180)
+        self.mode_area.set(self.areaMode)
+        self.min_area.set(self.areaMin)
+        self.max_area.set(self.areaMax)
+        areaLabel.pack()
+        self.mode_area.pack()
+        self.min_area.pack()
+        self.max_area.pack()
         ChannelR.pack()
 
         #lower_mask_slider = Scale(Sliders, from_=0, to=255, orient=HORIZONTAL, length= 180, command=mask1Update)
@@ -181,6 +200,10 @@ class Calibration:
         lowerR = self.R_lower_mask_slider.get()
         upperR = self.R_upper_mask_slider.get()
 
+        modeArea = self.mode_area.get()
+        minArea = self.min_area.get()
+        maxArea = self.max_area.get()
+
         config.set('blue', 'lower', str(lowerB))
         config.set('blue', 'upper', str(upperB))
 
@@ -189,6 +212,10 @@ class Calibration:
         
         config.set('red', 'lower', str(lowerR))
         config.set('red', 'upper', str(upperR))
+
+        config.set('area', 'mode', str(modeArea))
+        config.set('area', 'min', str(minArea))
+        config.set('area', 'max', str(maxArea))
 
         with open('config.ini', 'w') as f:
             config.write(f)
@@ -199,13 +226,18 @@ class Calibration:
         config.read('config.ini')
 
         #B
-        self.B_lower_threshold = config.get('blue', 'lower')
-        self.B_upper_threshold = config.get('blue', 'upper')
+        self.B_lower = config.get('blue', 'lower')
+        self.B_upper = config.get('blue', 'upper')
 
         #G
-        self.G_lower_threshold = config.get('green', 'lower')
-        self.G_upper_threshold = config.get('green', 'upper')
+        self.G_lower = config.get('green', 'lower')
+        self.G_upper = config.get('green', 'upper')
 
         #R
-        self.R_lower_threshold = config.get('red', 'lower')
-        self.R_upper_threshold = config.get('red', 'upper')
+        self.R_lower = config.get('red', 'lower')
+        self.R_upper = config.get('red', 'upper')
+
+        #Area
+        self.areaMode = config.get('area', 'mode')
+        self.areaMin = config.get('area', 'min')
+        self.areaMax = config.get('area', 'max')
